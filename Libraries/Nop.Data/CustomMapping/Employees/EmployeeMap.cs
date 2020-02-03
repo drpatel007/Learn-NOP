@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Nop.Core.Domain.Employees;
+using Nop.Core.CustomDomain.Employees;
 using Nop.Data.Mapping;
 
 namespace Nop.Data.CustomNopMapping.Employees

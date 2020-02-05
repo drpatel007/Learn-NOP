@@ -55,7 +55,7 @@ namespace Nop.Web.Areas.Admin.CustomFactories
                     //fill in model values from the entity
                     var employeeModel = employee.ToModel<EmployeeModel>();
 
-                    //convert dates to the user time
+                    employeeModel.Email = employee.Email;
                     employeeModel.Name = employee.Name;
                     employeeModel.DateOfBirth = employee.DateOfBirth;
                     employeeModel.Salary = employee.Salary;
@@ -75,6 +75,7 @@ namespace Nop.Web.Areas.Admin.CustomFactories
                 //fill in model values from the entity
                 model = model ?? new EmployeeModel();
                 model.Id = employee.Id;
+                model.Email = employee.Email;
                 model.Name = employee.Name;
                 model.DateOfBirth = employee.DateOfBirth;
                 model.Salary = employee.Salary;

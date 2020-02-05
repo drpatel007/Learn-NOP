@@ -17,7 +17,8 @@ namespace Nop.Data.CustomNopMapping.Employees
         {
             builder.ToTable(nameof(Employee));
             builder.HasKey(employee => employee.Id);
-            builder.Property(employee => employee.Name).HasMaxLength(500);
+            builder.Property(employee => employee.Name).HasMaxLength(100);
+            builder.Property(employee => employee.Email).HasMaxLength(1000);
         }
 
         #endregion

@@ -84,9 +84,9 @@
                                 Length = Model.PageSize,
                                 LengthMenu = Model.AvailablePageSizes,
                                 Filters = new List<FilterParameter>
-                                                                                {
-                                                                                    new FilterParameter(nameof(Model.SearchName)),
-                                                                                }
+                                {
+                                    new FilterParameter(nameof(Model.SearchName)),
+                                }
                             };
 
                             gridModel.ColumnCollection.Add(new ColumnProperty(nameof(EmployeeModel.Id))
@@ -96,6 +96,13 @@
                                 ClassName = NopColumnClassDefaults.CenterAll,
                                 Width = "50",
                             });
+
+                            gridModel.ColumnCollection.Add(new ColumnProperty(nameof(EmployeeModel.Email))
+                            {
+                                Title = T("Admin.Employees.Employees.Fields.Email").Text,
+                                Width = "200"
+                            });
+
                             gridModel.ColumnCollection.Add(new ColumnProperty(nameof(EmployeeModel.Name))
                             {
                                 Title = T("Admin.Employees.Employees.Fields.Name").Text,

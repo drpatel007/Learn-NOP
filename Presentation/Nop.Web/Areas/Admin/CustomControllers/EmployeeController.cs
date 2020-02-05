@@ -149,6 +149,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
             {
                 try
                 {
+                    customer.Email = model.Email;
                     customer.Name = model.Name;
                     customer.DateOfBirth = model.DateOfBirth;
                     customer.Salary = model.Salary;

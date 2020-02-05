@@ -23,6 +23,9 @@ namespace Nop.Web.Areas.Admin.CustomModels.Employees
         [NopResourceDisplayName("Admin.Employees.Employees.Fields.Name")]
         public string Name { get; set; }
 
+        [NopResourceDisplayName("Admin.Employees.Employees.Fields.Email")]
+        public string Email { get; set; }
+
         [UIHint("DateNullable")]
         [NopResourceDisplayName("Admin.Employees.Employees.Fields.DateOfBirth")]
         public DateTime DateOfBirth { get; set; }

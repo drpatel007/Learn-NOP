@@ -12,5 +12,6 @@ namespace Nop.Services.Employees
         void UpdateEmployee(Employee employee);
         IList<Employee> GetEmployeesByIds(int[] employeeIds);
         Employee GetEmployeeById(int employeeId);
+        Employee GetEmployeeByEmail(string email);
     }
 }

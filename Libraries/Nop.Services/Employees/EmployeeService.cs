@@ -95,5 +95,18 @@ namespace Nop.Services.Employees
             return sortedEmployees;
         }
 
+        public virtual Employee GetEmployeeByEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return null;
+
+            var query = from c in _employeeRepository.Table
+                        orderby c.Id
+                        where c.Email == email
+                        select c;
+            var employee = query.FirstOrDefault();
+            return employee;
+        }
+
     }
 }

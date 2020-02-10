@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
 using Nop.Core.CustomDomain.Employees;
 using Nop.Services.Employees;
+using Nop.Services.ExportImport;
 using Nop.Services.Localization;
 using Nop.Services.Messages;
 using Nop.Services.Security;
@@ -29,6 +32,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
         private readonly IEmployeeModelFactory _employeeModelFactory;
         private readonly INotificationService _notificationService;
         private readonly ILocalizationService _localizationService;
+        private readonly IExportManager _exportManager;
 
         #endregion
 
@@ -38,13 +42,15 @@ namespace Nop.Web.Areas.Admin.CustomControllers
             IPermissionService permissionService,
             IEmployeeModelFactory employeeModelFactory,
             INotificationService notificationService,
-            ILocalizationService localizationService)
+            ILocalizationService localizationService,
+            IExportManager exportManager)
         {
             _employeeService = employeeService;
             _permissionService = permissionService;
             _notificationService = notificationService;
             _localizationService = localizationService;
             _employeeModelFactory = employeeModelFactory;
+            _exportManager = exportManager;
         }
 
         #endregion
@@ -58,7 +64,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
 
         public virtual IActionResult List()
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
 
             //prepare model
@@ -70,7 +76,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
         [HttpPost]
         public virtual IActionResult EmployeeList(EmployeeSearchModel searchModel)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedDataTablesJson();
 
             //prepare model
@@ -81,7 +87,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
 
         public virtual IActionResult Create()
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
 
             //prepare model
@@ -94,8 +100,11 @@ namespace Nop.Web.Areas.Admin.CustomControllers
         [FormValueRequired("save", "save-continue")]
         public virtual IActionResult Create(EmployeeModel model, bool continueEditing, IFormCollection form)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
+
+            if (!string.IsNullOrWhiteSpace(model.Email) && _employeeService.GetEmployeeByEmail(model.Email) != null)
+                ModelState.AddModelError(string.Empty, "Email is already registered");
 
             if (ModelState.IsValid)
             {
@@ -119,7 +128,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
 
         public virtual IActionResult Edit(int id)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
 
             //try to get a customer with the specified id
@@ -137,13 +146,17 @@ namespace Nop.Web.Areas.Admin.CustomControllers
         [FormValueRequired("save", "save-continue")]
         public virtual IActionResult Edit(EmployeeModel model, bool continueEditing, IFormCollection form)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
 
             //try to get a customer with the specified id
             var customer = _employeeService.GetEmployeeById(model.Id);
             if (customer == null || customer.Deleted)
                 return RedirectToAction("List");
+
+            var existsEmployee = _employeeService.GetEmployeeByEmail(model.Email);
+            if (existsEmployee != null && existsEmployee.Id != model.Id)
+                ModelState.AddModelError(string.Empty, "Email is already registered");
 
             if (ModelState.IsValid)
             {
@@ -178,7 +191,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
         [HttpPost]
         public virtual IActionResult Delete(int id)
         {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
 
             //try to get a customer with the specified id
@@ -200,5 +213,99 @@ namespace Nop.Web.Areas.Admin.CustomControllers
         }
 
         #endregion Methods
+
+        #region Export / Import
+
+        [HttpPost, ActionName("List")]
+        [FormValueRequired("exportxml-all")]
+        public virtual IActionResult ExportXmlAll(EmployeeSearchModel model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
+                return AccessDeniedView();
+
+            var employees = _employeeService.GetAllEmployees();
+
+            try
+            {
+                var xml = _exportManager.ExportEmployeeToXml(employees);
+                return File(Encoding.UTF8.GetBytes(xml), "application/xml", "customers.xml");
+            }
+            catch (Exception exc)
+            {
+                _notificationService.ErrorNotification(exc);
+                return RedirectToAction("List");
+            }
+        }
+
+        [HttpPost]
+        public virtual IActionResult ExportXmlSelected(string selectedIds)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
+                return AccessDeniedView();
+
+            var employees = new List<Employee>();
+            if (selectedIds != null)
+            {
+                var ids = selectedIds
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => Convert.ToInt32(x))
+                    .ToArray();
+                employees.AddRange(_employeeService.GetEmployeesByIds(ids));
+            }
+
+            var xml = _exportManager.ExportEmployeeToXml(employees);
+            return File(Encoding.UTF8.GetBytes(xml), "application/xml", "customers.xml");
+        }
+
+        [HttpPost, ActionName("List")]
+        [FormValueRequired("exportexcel-all")]
+        public virtual IActionResult ExportExcelAll(EmployeeSearchModel model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+                return AccessDeniedView();
+
+            var employees = _employeeService.GetAllEmployees();
+
+            try
+            {
+                var bytes = _exportManager.ExportEmployeesToXlsx(employees);
+                return File(bytes, MimeTypes.TextXlsx, "customers.xlsx");
+            }
+            catch (Exception exc)
+            {
+                _notificationService.ErrorNotification(exc);
+                return RedirectToAction("List");
+            }
+        }
+
+        [HttpPost]
+        public virtual IActionResult ExportExcelSelected(string selectedIds)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
+                return AccessDeniedView();
+
+            var employees = new List<Employee>();
+            if (selectedIds != null)
+            {
+                var ids = selectedIds
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => Convert.ToInt32(x))
+                    .ToArray();
+                employees.AddRange(_employeeService.GetEmployeesByIds(ids));
+            }
+
+            try
+            {
+                var bytes = _exportManager.ExportEmployeesToXlsx(employees);
+                return File(bytes, MimeTypes.TextXlsx, "employees.xlsx");
+            }
+            catch (Exception exc)
+            {
+                _notificationService.ErrorNotification(exc);
+                return RedirectToAction("List");
+            }
+        }
+
+        #endregion
     }
 }

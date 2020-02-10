@@ -6,7 +6,7 @@ namespace Nop.Services.Employees
 {
     public partial interface IEmployeeService
     {
-        IPagedList<Employee> GetAllEmployees(int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false);
+        IPagedList<Employee> GetAllEmployees(string email = null, string name = null, int dayOfBirth = 0, int monthOfBirth = 0, int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false);
         void DeleteEmployee(Employee employee);
         void InsertEmployee(Employee employee);
         void UpdateEmployee(Employee employee);

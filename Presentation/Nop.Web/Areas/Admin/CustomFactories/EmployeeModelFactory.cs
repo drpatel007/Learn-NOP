@@ -45,7 +45,7 @@ namespace Nop.Web.Areas.Admin.CustomFactories
                 throw new ArgumentNullException(nameof(searchModel));
 
             //get customers
-            var employees = _employeeService.GetAllEmployees(pageIndex: searchModel.Page - 1, pageSize: searchModel.PageSize);
+            var employees = _employeeService.GetAllEmployees(email: searchModel.SearchEmail, name: searchModel.SearchName, dayOfBirth: searchModel.SearchDayOfBirth, monthOfBirth: searchModel.SearchMonthOfBirth, pageIndex: searchModel.Page - 1, pageSize: searchModel.PageSize);
 
             //prepare list model
             var model = new EmployeeListModel().PrepareToGrid(searchModel, employees, () =>

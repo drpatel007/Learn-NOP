@@ -223,7 +223,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageEmployees))
                 return AccessDeniedView();
 
-            var employees = _employeeService.GetAllEmployees();
+            var employees = _employeeService.GetAllEmployees(email: model.SearchEmail, name: model.SearchName, dayOfBirth: model.SearchDayOfBirth, monthOfBirth: model.SearchMonthOfBirth);
 
             try
             {
@@ -264,7 +264,7 @@ namespace Nop.Web.Areas.Admin.CustomControllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
                 return AccessDeniedView();
 
-            var employees = _employeeService.GetAllEmployees();
+            var employees = _employeeService.GetAllEmployees(email: model.SearchEmail, name: model.SearchName, dayOfBirth: model.SearchDayOfBirth, monthOfBirth: model.SearchMonthOfBirth);
 
             try
             {

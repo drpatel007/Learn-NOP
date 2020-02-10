@@ -24,10 +24,23 @@ namespace Nop.Services.Employees
             _eventPublisher = eventPublisher;
         }
 
-        public virtual IPagedList<Employee> GetAllEmployees(int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false)
+        public virtual IPagedList<Employee> GetAllEmployees(string email = null, string name = null, int dayOfBirth = 0, int monthOfBirth = 0, int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false)
         {
             var query = _employeeRepository.Table;
             query = query.Where(c => !c.Deleted);
+
+            if (!string.IsNullOrWhiteSpace(email))
+                query = query.Where(c => c.Email.Contains(email));
+
+            if (!string.IsNullOrWhiteSpace(name))
+                query = query.Where(c => c.Name.Contains(name));
+
+            if (dayOfBirth > 0)
+                query = query.Where(c => c.DateOfBirth.Day == dayOfBirth);
+
+            if (monthOfBirth > 0)
+                query = query.Where(c => c.DateOfBirth.Month == monthOfBirth);
+
             var customers = new PagedList<Employee>(query, pageIndex, pageSize, getOnlyTotalCount);
             return customers;
         }

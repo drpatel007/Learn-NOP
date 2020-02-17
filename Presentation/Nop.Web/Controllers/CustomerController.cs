@@ -746,6 +746,7 @@ namespace Nop.Web.Controllers
                     if (_customerSettings.GenderEnabled)
                         _genericAttributeService.SaveAttribute(customer, NopCustomerDefaults.GenderAttribute, model.Gender);
                     _genericAttributeService.SaveAttribute(customer, NopCustomerDefaults.FirstNameAttribute, model.FirstName);
+                    _genericAttributeService.SaveAttribute(customer, NopCustomerDefaults.MiddleNameAttribute, model.MiddleName);
                     _genericAttributeService.SaveAttribute(customer, NopCustomerDefaults.LastNameAttribute, model.LastName);
                     if (_customerSettings.DateOfBirthEnabled)
                     {

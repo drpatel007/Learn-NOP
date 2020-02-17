@@ -43,6 +43,12 @@
                         <span asp-validation-for="FirstName"></span>
                     </div>
                     <div class="inputs">
+                        <label asp-for="MiddleName" asp-postfix=":"></label>
+                        <input asp-for="MiddleName" />
+                        <nop-required />
+                        <span asp-validation-for="MiddleName"></span>
+                    </div>
+                    <div class="inputs">
                         <label asp-for="LastName" asp-postfix=":"></label>
                         <input asp-for="LastName" />
                         <nop-required />

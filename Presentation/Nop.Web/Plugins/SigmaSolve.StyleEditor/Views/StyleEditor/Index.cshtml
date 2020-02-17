@@ -1,0 +1,630 @@
+﻿@model Nop.Plugin.SigmaSolve.StyleEditor.Models.StyleEditorMainModel
+@using Nop.Web.Framework.UI
+@{
+    Layout = "_AdminLayout";
+    Html.AppendCssFileParts("~/Plugins/SigmaSolve.StyleEditor/Content/Styles/zTreeStyle.css");
+    Html.AppendCssFileParts("~/Plugins/SigmaSolve.StyleEditor/Content/Styles/codemirror.css");
+    Html.AppendCssFileParts("~/Plugins/SigmaSolve.StyleEditor/Content/Styles/show-hint.css");
+    Html.AppendCssFileParts("~/Plugins/SigmaSolve.StyleEditor/Content/Styles/matchesonscrollbar.css");
+    Html.AppendCssFileParts("~/Plugins/SigmaSolve.StyleEditor/Content/Styles/dialog.css");
+    /* ViewBag.Title = "Style Editor";
+     Style.Include("zTreeStyle.css");
+     Style.Include("codemirror.css");
+     Style.Include("show-hint.css");
+     Style.Include("matchesonscrollbar.css");
+     Style.Include("dialog.css");*/
+
+}
+<style>
+    #fileContent {
+        height: 100%;
+    }
+
+    .CodeMirror-sizer, .CodeMirror-gutters {
+        min-height: 100% !important;
+    }
+
+    #fileContent .row {
+        height: 100% !important;
+    }
+
+    .CodeMirror.cm-s-default {
+        height: 100% !important;
+    }
+
+    .CodeMirror {
+        height: auto;
+        border: 1px solid #ddd;
+    }
+
+    .CodeMirror-scroll {
+        max-height: 100%;
+    }
+
+    .CodeMirror pre {
+        padding-left: 7px;
+        line-height: 1.25;
+    }
+
+    #filecontentDiv {
+        padding: 10px;
+    }
+
+    .editormd-menu > li {
+        margin: 0;
+        padding: 0px 5px;
+        display: inline-block;
+        position: relative;
+    }
+</style>
+<div>
+    <div id="lblSuccessMgs" class="alert alert-success" style="padding:10px; z-index:99; width: 100%;display:none;">
+        File Loaded
+    </div>
+    <div id="lblErrorMgs" class="alert alert-danger" style="padding:10px; z-index:99;display:none;width: 100%;">
+    </div>
+</div>
+<div id="filecontentDiv">
+    <div style="BORDER-RIGHT: #999999 1px dashed;float:left;width:20%;height:100%;overflow-x:scroll">
+        <fieldset>
+            <input type="checkbox" name="chkCurrentTheme" id="chkCurrentTheme">Showing Only Current Theme<br>
+        </fieldset>
+        <ul id="tree" class="ztree" style="width:260px; overflow:auto;"></ul>
+    </div>
+    <div style="height:100%">
+        @using (Html.BeginForm(null, null, FormMethod.Post, new { id = "fileContent" }))
+        {
+            <div style="float: right; width: 78%;height:100%;">
+                @Html.AntiForgeryToken()
+                <div class="modal-dialog modal-dialog-centered" role="document" style="width:100%;height:100%;margin-top:0">
+                    <div class="modal-content" style="height: 100%">
+                        <div class="modal-header">
+                            <div class="editormd-toolbar-container disabled" id="toolbar">
+                                <ul class="editormd-menu" style="padding: 0;font-size: 18px;float:left">
+                                    <li style="padding-left: 0;">
+                                        <a href="javascript:void(0);" title="Undo Ctrl+Z" onclick="undo()">
+                                            <i class="fa fa-undo" name="undo"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Redo（Ctrl+Y" onclick="redo()">
+                                            <i class="fa fa-repeat" name="redo"></i>
+                                        </a>
+                                    </li>
+                                    <li class="divider">|</li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Search" onclick="searchCode()">
+                                            <i class="fa fa-search" name="Search"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Find Previous" onclick="findPrev()">
+                                            <i class="fa fa-search-minus" name="Find Previous"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Find Next" onclick="findNext()">
+                                            <i class="fa fa-search-plus" name="FindNext"></i>
+                                        </a>
+                                    </li>
+                                    <li class="divider">|</li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Replace" onclick="replace()">
+                                            <i class="fa  fa-exchange" name="Replace"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Replace All" onclick="replaceAll()">
+                                            <i class="fa  fa-retweet" name="ReplaceAll"></i>
+                                        </a>
+                                    </li>
+                                    <li class="divider">|</li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Go To Line" onclick="gotoline()">
+                                            <i class="fa  fa-share" name="Go To Line"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" title="Hint" data-toggle="modal" data-target="#exampleModal">
+                                            <i class="fa  fa-info" name="Hint"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div id="VersionNumberInfo" style="float:right;font-size: 15px;display: none">
+                                    <div class="row">
+                                        <div class="col-md-4" style="vertical-align: middle;padding-right: 0;text-align: right;">
+                                            <span style="line-height:30px;font-weight: bold;font-size: 15px;">Version:</span>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <select class="form-control" id="VersionNumber" name="VersionNumber"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body" style="height:calc(100% - 150px);padding-top: 0;padding-bottom: 0;">
+                            <div class="row">
+                                @Html.EditorFor(m => m.FileContant)
+                                <input type="hidden" id="FolderPath" name="FolderPath" />
+                                <span style="color:red" id="validationError"></span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div id="bottom-footer" style="display:none">
+                                <button type="button" id="Save" onclick="submitData()" class="btn btn-primary">Save changes</button>
+                                <button type="button" id="btnsClearAllVersionsCurrentFile" onclick="clearAllVersionsCurrentFile()" class="btn btn-primary">Clear All Versions</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        }
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="exampleModalLabel" style="float:left">Hint</h2>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <b style="min-width:150px;display: inline-block">Start searching:</b> ctrl-f / Cmd-F
+                    </li>
+                    <li class="list-group-item">
+                        <b style="min-width:150px;display: inline-block">Find next:</b> Ctrl-G / Cmd-G
+
+                    </li>
+                    <li class="list-group-item">
+                        <b style="min-width:150px;display: inline-block">Find previous:</b> Shift-Ctrl-G / Shift-Cmd-G
+
+                    </li>
+                    <li class="list-group-item">
+                        <b style="min-width:150px;display: inline-block">Replace:</b> Shift-Ctrl-F / Cmd-Option-F
+                    </li>
+                    <li class="list-group-item">
+                        <b style="min-width:150px;display: inline-block">Replace all:</b> Shift-Ctrl-R / Shift-Cmd-Option-F
+                    </li>
+                    <li class="list-group-item">
+                        <b style="min-width:150px;display: inline-block">Go to line number:</b> Alt+G
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+@{
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/Ztree.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/codemirror.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/javascript.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/css.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/htmlmixed.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/matchbrackets.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/javascript-hint.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/css-hint.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/html-hint.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/show-hint.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/activebookmark.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/search.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/searchcursor.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/match-highlighter.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/matchesonscrollbar.js");
+    Html.AddScriptParts("~/Plugins/SigmaSolve.StyleEditor/Content/Scripts/dialog.js");
+}
+@* //Script.Include("goto-line.js");*@
+<script>
+    var zTree;
+    var zNodes;
+    var setting = {
+        view: {
+            dblClickExpand: false,
+            showLine: true,
+            selectedMulti: false
+        },
+        data: {
+            simpleData: {
+                enable: true,
+                idKey: "id",
+                pIdKey: "pId",
+                rootPId: ""
+            }
+        },
+        callback: {
+            beforeClick: function (treeId, treeNode) {
+       
+                var zTree = $.fn.zTree.getZTreeObj("tree");
+                if (treeNode.isParent) {
+                    myClick(undefined, treeId, treeNode, undefined);
+                    return false;
+                } else {
+                    $("#Save").attr("disabled", true);
+                    $("#btnsClearAllVersionsCurrentFile").attr("disabled", true);
+                    $("#VersionNumberInfo").attr("disabled", true);
+                    $("#toolbar").addClass("disabled");
+                    //demoIframe.attr("src", treeNode.file + ".html");
+                    $.ajax({
+                        url: "@Url.Action("GetFileContant", "StyleEditor")",
+                        dataType: "json",
+                        type: "GET",
+                        data: { folderPath: treeNode.FolderPath },
+                        contentType: 'application/json; charset=utf-8',
+                        success: function (data) {
+                            $("#Save").attr("disabled", false);
+                            $("#btnsClearAllVersionsCurrentFile").attr("disabled", false);
+                            $("#VersionNumberInfo").attr("disabled", false);
+                            //   $("#FileContant").val(data);
+                            $("#toolbar").removeClass("disabled");
+                            $("#FolderPath").val(treeNode.FolderPath);
+                            editor1.setValue(data.FileContant);
+                            editor1.clearHistory();
+                            $('#VersionNumber').empty();
+                            $('#VersionNumber').append($('<option>', { value: "0", text: "--Select file Version--" }, '<option/>'));
+                            $.each(data.StyleEditors, function (key, value) {
+                                $('#VersionNumber').append($('<option>', { value: value.Id, text: value.VersionNumber + " " + "(" + value.CreatedDate + ")" }, '<option/>'));
+                            });
+                            if (data.StyleEditors.length > 0) {
+                                $('#btnsClearAllVersionsCurrentFile').css("display", "inline-block");
+                                $('#VersionNumberInfo').show();
+                            }
+                            else {
+                                $('#VersionNumberInfo').hide();
+                                $('#btnsClearAllVersionsCurrentFile').css("display", "none");
+                            }
+                            $("#bottom-footer").show();
+                            $("#lblSuccessMgs").text("File loaded successfully");
+                            $("#lblSuccessMgs").show();
+                            setTimeout(function () {
+                                $("#lblSuccessMgs").hide();
+                            }, 2000);
+                            var extension = treeNode.FolderPath.substr((treeNode.FolderPath.lastIndexOf('.') + 1));
+                            //alert(extension);
+                            if (extension == "js") {
+                                editor1.setOption("mode", "text/javascript");
+                            }
+                            if (extension == "css") {
+                                editor1.setOption("mode", "text/css");
+                            }
+                            //if (extension == "cshtml") {
+                            //    editor1.setOption("mode", "text/html")
+                            //}
+
+                        },
+                        error: function (xhr) {
+                            $("#lblErrorMgs").text("Failed to perform operations please try again");
+                            $("#lblErrorMgs").show();
+                            setTimeout(function () {
+                                $("#lblErrorMgs").hide();
+                            }, 2000);
+                        }
+                    });
+                    return true;
+                }
+            },
+            onExpand: myClick
+        }
+    };
+    function submitData() {
+        if (editor1.getValue() == "" || editor1.getValue() == null) {
+            $("#lblErrorMgs").text("Please select file");
+            $("#lblErrorMgs").show();
+            setTimeout(function () {
+                $("#lblErrorMgs").hide();
+            }, 2000);
+        }
+        else {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var data = {
+                __RequestVerificationToken: token,
+                FileContant: editor1.getValue(),
+                FolderPath: $("#FolderPath").val()
+            };
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: '@Url.Action("SaveFileContent", "StyleEditor")',
+                data: data,
+                success: function (data) {
+                    $('#VersionNumber').empty();
+                    $('#VersionNumber').append($('<option>', { value: "0", text: "--Select file Version--" }, '<option/>'));
+                    $.each(data.StyleEditors, function (key, value) {
+                        $('#VersionNumber').append($('<option>', { value: value.Id, text: value.VersionNumber + " " + "(" + value.CreatedDate + ")" }, '<option/>'));
+                    });
+                    if (data.StyleEditors.length > 0) {
+                        $('#VersionNumberInfo').show();
+                        $('#btnsClearAllVersionsCurrentFile').css("display", "inline-block");
+                    }
+                    else {
+                        $('#VersionNumberInfo').show();
+                        $('#btnsClearAllVersionsCurrentFile').css("display", "none");
+                    }
+                    $("#lblSuccessMgs").text("File saved successfully");
+                    $("#lblSuccessMgs").show();
+                    setTimeout(function () {
+                        $("#lblSuccessMgs").hide();
+                    }, 2000);
+                }
+            });
+        }
+
+        //$("#fileContent").ajaxSubmit({ url: '@Url.Action("SaveFileContent", "StyleEditor")', type: 'post' });
+
+    }
+    function undo() {
+        CodeMirror.commands.undo(editor1);
+    }
+    function redo() {
+        CodeMirror.commands.redo(editor1);
+    }
+    function searchCode() {
+        CodeMirror.commands.find(editor1);
+    }
+    function findNext() {
+        CodeMirror.commands.findNext(editor1);
+    }
+    function findPrev() {
+        CodeMirror.commands.findPrev(editor1);
+    }
+    function clearSearch() {
+        CodeMirror.commands.clearSearch(editor1);
+    }
+    function replace() {
+        CodeMirror.commands.replace(editor1);
+    }
+    function replaceAll() {
+        CodeMirror.commands.replaceAll(editor1);
+    }
+    function gotoline() {
+        CodeMirror.commands.jumpToLine(editor1);
+    }
+    function showHint() {
+        $('#lblHints').toggle("slide");
+    }
+    function clearAllVersionsCurrentFile() {
+        var r = confirm("Are you sure clear all versions for current file?");
+        if (r == true) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var data = {
+                __RequestVerificationToken: token,
+                folderPath: $("#FolderPath").val()
+            };
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: '@Url.Action("ClearAllVersionsAForCurrentFile", "StyleEditor")',
+                data: data,
+                success: function (data) {
+                    $('#VersionNumber').empty();
+                    $('#VersionNumber').append($('<option>', { value: "0", text: "--Select file Version--" }, '<option/>'));
+                    $('#VersionNumberInfo').hide();
+                    $("#btnsClearAllVersionsCurrentFile").hide();
+                    $("#lblSuccessMgs").text("Cleared all versions for current file successfully");
+                    $("#lblSuccessMgs").show();
+                    setTimeout(function () {
+                        $("#lblSuccessMgs").hide();
+                    }, 2000);
+                }
+            });
+        }
+
+    }
+    function clearAllVersions() {
+        var r = confirm("Are you sure clear all versions for all files?");
+        if (r == true) {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var data = {
+                __RequestVerificationToken: token
+            };
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: '@Url.Action("ClearAllVersions", "StyleEditor")',
+                data: data,
+                success: function (data) {
+                    $('#VersionNumber').empty();
+                    $('#VersionNumber').append($('<option>', { value: "0", text: "--Select file Version--" }, '<option/>'));
+                    $('#VersionNumberInfo').show();
+                    $('#btnsClearAllVersionsCurrentFile').hide();
+                    $("#lblSuccessMgs").text("Clear all versions successfully");
+                    $("#lblSuccessMgs").show();
+                    setTimeout(function () {
+                        $("#lblSuccessMgs").hide();
+                    }, 2000);
+                }
+            });
+        }
+
+    }
+    $(document).ready(function () {
+        $('#chkCurrentTheme').prop('checked', true);
+
+        $('#chkCurrentTheme').change(function () {
+            if (!$(this).is(':checked')) {
+                GetParentNode($(this).is(':checked'))
+                editor1.clearHistory();
+                $('#VersionNumberInfo').hide();
+                $('#btnsClearAllVersionsCurrentFile').css("display", "none");
+                $("#Save").hide();
+                $("#lblSuccessMgs").hide();
+                $("#lblErrorMgs").hide();
+                editor1.setValue("");
+            }
+            else {
+                GetParentNode($(this).is(':checked'))
+                editor1.clearHistory();
+                $('#VersionNumberInfo').hide();
+                $('#btnsClearAllVersionsCurrentFile').css("display", "none");
+                $("#Save").hide();
+                $("#lblSuccessMgs").hide();
+                $("#lblErrorMgs").hide();
+                editor1.setValue("");
+            }
+        });
+        CodeMirror.commands.save = function (cm) {
+            if (confirm("Are you sure ? do you want to save it") == true) {
+
+                if (editor1.getValue() == "" || editor1.getValue() == null) {
+                    $("#lblErrorMgs").text("Please select file");
+                    $("#lblErrorMgs").show();
+                    setTimeout(function () {
+                        $("#lblErrorMgs").hide();
+                    }, 2000);
+                }
+                else {
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+                    var data = {
+                        __RequestVerificationToken: token,
+                        FileContant: editor1.getValue(),
+                        FolderPath: $("#FolderPath").val()
+                    };
+                    $.ajax({
+                        type: "POST",
+                        dataType: "json",
+                        url: '@Url.Action("SaveFileContent", "StyleEditor")',
+                        data: data,
+                        success: function (data) {
+                            $('#VersionNumber').empty();
+                            $('#VersionNumber').append($('<option>', { value: "0", text: "--Select file Version--" }, '<option/>'));
+                            $.each(data.StyleEditors, function (key, value) {
+                                $('#VersionNumber').append($('<option>', { value: value.Id, text: value.VersionNumber + " " + "(" + value.CreatedDate + ")" }, '<option/>'));
+                            });
+                            if (data.StyleEditors.length > 0) {
+                                $('#VersionNumberInfo').show();
+                                $('#btnsClearAllVersionsCurrentFile').css("display", "inline-block");
+                            }
+                            else {
+                                $('#VersionNumberInfo').hide();
+                                $('#btnsClearAllVersionsCurrentFile').css("display", "none");
+                            }
+                            $("#lblSuccessMgs").text("File saved successfully");
+                            $("#lblSuccessMgs").show();
+                            setTimeout(function () {
+                                $("#lblSuccessMgs").hide();
+                            }, 2000);
+                        }
+                    });
+                }
+            }
+        }
+        CodeMirror.commands.jumpToLine = function (cm) {
+            var text = 'Go To: <input type="text" style="width: 10em" class="CodeMirror-search-field"/> <span style="color: #888" class="CodeMirror-search-hint">(enter line number here)</span>';
+            var f = function (query) {
+                cm.setCursor(parseInt(query), 0);
+            };
+            var deflt = null;
+            if (cm.openDialog) editor1.openDialog(text, f, { value: deflt, selectValueOnOpen: true });
+            else {
+                var line = Number(prompt("Where", ""));
+                if (!isNaN(line)) cm.setCursor(line, 0);
+            }
+        };
+        CodeMirror.keyMap.default["Alt-G"] = "jumpToLine";
+        $("#VersionNumber").change(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var Id = $(this).val();
+            if (Id > 0) {
+                $.ajax({
+                    url: "@Url.Action("BindVersionFileContant", "StyleEditor")",
+                    dataType: "json",
+                    type: "POST",
+                    data: { id: Id, __RequestVerificationToken: token, },
+                    success: function (data) {
+                        //   $("#FileContant").val(data);
+                        editor1.setValue(data.FileContant);
+                        $("#lblSuccessMgs").text("File version loaded successfully");
+                        $("#lblSuccessMgs").show();
+                        setTimeout(function () {
+                            $("#lblSuccessMgs").hide();
+                        }, 2000);
+                    },
+                    error: function (xhr) {
+                        $("#lblErrorMgs").text("Cannot load file (exception message)");
+                        $("#lblErrorMgs").show();
+                        setTimeout(function () {
+                            $("#lblErrorMgs").hide();
+                        }, 2000);
+                    }
+                });
+            }
+        });
+
+        $("#filecontentDiv").css("height", $(window).height() - 110 + "px");
+        GetParentNode(true);
+
+    });
+    function myClick(event, treeId, treeNode, clickFlag) {
+        if (treeNode.children == null || treeNode.children == "") {
+            $.ajax({
+                url: "@Url.Action("GetChildNode", "StyleEditor")",
+                dataType: "json",
+                type: "GET",
+                data: { folderPath: treeNode.FolderPath },
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+                    treeNode.open = true;
+                    var zTree = $.fn.zTree.getZTreeObj("tree");
+                    zTree.addNodes(treeNode, data);
+                },
+                error: function (xhr) {
+                    alert('error');
+                }
+            });
+        }
+    }
+    var editor1 = CodeMirror.fromTextArea(document.getElementById("FileContant"), {
+        lineNumbers: true,
+        mode: "text/css",
+        extraKeys: { "Ctrl-Space": "autocomplete" },
+        matchBrackets: true
+    });
+
+    function GetParentNode(checked) {
+        if (checked) {
+            $.ajax({
+                url: "@Url.Action("GetParentNode", "StyleEditor")",
+                dataType: "json",
+                type: "GET",
+                //data: { themeId: "1" },
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+                    zNodes = data;
+                    var t = $("#tree");
+                    t = $.fn.zTree.init(t, setting, zNodes);
+                    var zTree = $.fn.zTree.getZTreeObj("tree");
+                    zTree.selectNode(zTree.getNodeByParam("id", 101));
+                },
+                error: function (xhr) {
+                    alert('error');
+                }
+            });
+        }
+        else {
+            $.ajax({
+                url: "@Url.Action("GetParentNodeChecked", "StyleEditor")",
+                dataType: "json",
+                type: "GET",
+                //data: { themeId: "1" },
+                contentType: 'application/json; charset=utf-8',
+                success: function (data) {
+                    zNodes = data;
+                    var t = $("#tree");
+                    t = $.fn.zTree.init(t, setting, zNodes);
+                    var zTree = $.fn.zTree.getZTreeObj("tree");
+                    zTree.selectNode(zTree.getNodeByParam("id", 101));
+                },
+                error: function (xhr) {
+                    alert('error');
+                }
+            });
+        }
+
+    }
+</script>
+
+

@@ -1,0 +1,11 @@
+{
+  "Group": "Sigma Solve",
+  "FriendlyName": "Style Editor",
+  "SystemName": "StyleEditor",
+  "Version": "1.0",
+  "SupportedVersions": [ "4.20" ],
+  "Author": "Sigma Solve",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.SigmaSolve.StyleEditor.dll",
+  "Description": "This plugin allows you to edit theme files"
+}

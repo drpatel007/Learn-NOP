@@ -647,15 +647,19 @@ namespace Nop.Services.Customers
                 throw new ArgumentNullException(nameof(customer));
 
             var firstName = _genericAttributeService.GetAttribute<string>(customer, NopCustomerDefaults.FirstNameAttribute);
+            var middleName = _genericAttributeService.GetAttribute<string>(customer, NopCustomerDefaults.MiddleNameAttribute);
             var lastName = _genericAttributeService.GetAttribute<string>(customer, NopCustomerDefaults.LastNameAttribute);
 
             var fullName = string.Empty;
-            if (!string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName))
-                fullName = $"{firstName} {lastName}";
+            if (!string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(middleName) && !string.IsNullOrWhiteSpace(lastName))
+                fullName = $"{firstName} {middleName} {lastName}";
             else
             {
                 if (!string.IsNullOrWhiteSpace(firstName))
                     fullName = firstName;
+
+                if (!string.IsNullOrWhiteSpace(middleName))
+                    fullName = middleName;
 
                 if (!string.IsNullOrWhiteSpace(lastName))
                     fullName = lastName;

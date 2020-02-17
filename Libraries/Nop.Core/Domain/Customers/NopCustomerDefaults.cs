@@ -1,4 +1,4 @@
-
+﻿
 namespace Nop.Core.Domain.Customers
 {
     /// <summary>
@@ -55,6 +55,11 @@ namespace Nop.Core.Domain.Customers
         /// Gets a name of generic attribute to store the value of 'FirstName'
         /// </summary>
         public static string FirstNameAttribute => "FirstName";
+
+        /// <summary>
+        /// Gets a name of generic attribute to store the value of 'MiddleName'
+        /// </summary>
+        public static string MiddleNameAttribute => "MiddleName";
 
         /// <summary>
         /// Gets a name of generic attribute to store the value of 'LastName'

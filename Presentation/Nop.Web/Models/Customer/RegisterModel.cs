@@ -50,6 +50,8 @@ namespace Nop.Web.Models.Customer
 
         [NopResourceDisplayName("Account.Fields.FirstName")]
         public string FirstName { get; set; }
+        [NopResourceDisplayName("Account.Fields.MiddleName")]
+        public string MiddleName { get; set; }
         [NopResourceDisplayName("Account.Fields.LastName")]
         public string LastName { get; set; }
 
